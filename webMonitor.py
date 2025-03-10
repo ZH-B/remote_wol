@@ -120,6 +120,7 @@ class WeiboMonitor:
             #TODO 检查计算机是否处于开机状态
             if (host_nat.check_host_alive(self.config['host_ip'])):
                 self.next_check = time.time() + 60 #计算机处于唤醒状态， 每60秒检查一次状态
+                print("host on line 无需进行唤醒")
                 self.countdown()
                 continue
             self.check_new_weibo()
