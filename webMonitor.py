@@ -6,7 +6,6 @@ import time
 import sys
 from datetime import datetime
 import host_nat
-import portalocker
 
 process_lock_file = "~/.webmonitor.lock"
 
@@ -128,12 +127,5 @@ class WeiboMonitor:
             self.countdown()
 
 if __name__ == "__main__":
-    fp = open(process_lock_file, "w")
-    try:
-        portalocker.lock(fp, portalocker.LOCK_EX|portalocker.LOCK_NB)
-    except portalocker.LockException:
-        print("已有实例正在运行中， 退出")
-        sys.exit(1)
-        
     monitor = WeiboMonitor()
     monitor.run()
