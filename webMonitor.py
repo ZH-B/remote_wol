@@ -5,14 +5,13 @@ import requests
 import schedule
 import time
 from datetime import datetime
-import wakeup_mypc
+import remote_wol.host_nat as host_nat
 
 class WeiboMonitor:
     def __init__(self, config_path="config.json"):
         self.load_config(config_path)
         self.latest_mid = None
         self.load_last_state()
-        self.interval = 15
         self.next_check = time.time()
 
     def load_config(self, path):
@@ -87,7 +86,7 @@ class WeiboMonitor:
             print(f"[{datetime.now()}] 发现新微博: {latest['text'][:30]}...")
             
             if re.search(self.config['keyword'], latest['text'], re.I):
-                self.execute_script()
+                self.execute_WOL()
                 
             self.save_last_state(latest['mid'])
         else:
@@ -95,10 +94,9 @@ class WeiboMonitor:
 
         print('check new weibo done')
 
-    def execute_script(self):
-        """ 执行外部脚本 """
-        script = self.config['script_path']
-        wakeup_mypc.send_wol() 
+    def execute_WOL(self):
+        host_nat.send_wol(self.config['mac'])
+        time.sleep(60) #休眠一分钟，避免WOL指令频繁发送
 
     def countdown(self):
         """ 实时显示倒计时 """
@@ -115,8 +113,13 @@ class WeiboMonitor:
     def run(self):
         """ 启动定时任务 """
         while True:
+            #TODO 检查计算机是否处于开机状态
+            if (host_nat.check_host_alive() {
+                self.next_check = time.time() + 60 #计算机处于唤醒状态， 每60秒检查一次状态
+                continue
+            }
             self.check_new_weibo()
-            self.next_check = time.time() + self.interval
+            self.next_check = time.time() + 15 #计算机未处于唤醒状态， 每15秒进行一次指令检查
             self.countdown()
 
 if __name__ == "__main__":
