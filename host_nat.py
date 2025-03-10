@@ -18,4 +18,4 @@ def check_host_alive(host_ip):
 
 if __name__ == '__main__':
     # send_wol()
-    check_host_alive(192.168.31.101)
+    check_host_alive("192.168.31.101")
