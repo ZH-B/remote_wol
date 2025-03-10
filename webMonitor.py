@@ -2,10 +2,13 @@ import json
 import os
 import re
 import requests
-import schedule
 import time
+import sys
 from datetime import datetime
-import remote_wol.host_nat as host_nat
+import host_nat
+import portalocker
+
+process_lock_file = "~/.webmonitor.lock"
 
 class WeiboMonitor:
     def __init__(self, config_path="config.json"):
@@ -24,6 +27,7 @@ class WeiboMonitor:
                 self.latest_mid = f.read().strip()
 
     def save_last_state(self, mid):
+        self.latest_mid=mid
         with open("last_mid.txt", 'w') as f:
             f.write(mid)
 
@@ -90,13 +94,14 @@ class WeiboMonitor:
                 
             self.save_last_state(latest['mid'])
         else:
-            print("没有找到新的微博")
+            print(f"没有找到新的微博 lastmid{self.latest_mid}")
 
         print('check new weibo done')
 
     def execute_WOL(self):
         host_nat.send_wol(self.config['mac'])
-        time.sleep(60) #休眠一分钟，避免WOL指令频繁发送
+        self.next_check = time.time() + 60 #WOL 指令已经发送， 停止一分钟
+        self.countdown()
 
     def countdown(self):
         """ 实时显示倒计时 """
@@ -123,5 +128,12 @@ class WeiboMonitor:
             self.countdown()
 
 if __name__ == "__main__":
+    fp = open(process_lock_file, "w")
+    try:
+        portalocker.lock(fp, portalocker.LOCK_EX|portalocker.LOCK_NB)
+    except portalocker.LockException:
+        print("已有实例正在运行中， 退出")
+        sys.exit(1)
+        
     monitor = WeiboMonitor()
     monitor.run()
