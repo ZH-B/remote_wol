@@ -93,12 +93,12 @@ class WeiboMonitor:
                 
             self.save_last_state(latest['mid'])
         else:
-            print(f"没有找到新的微博 lastmid{self.latest_mid}")
+            print(f"没有找到新的微博 last mid:{self.latest_mid}")
 
         print('check new weibo done')
 
     def execute_WOL(self):
-        host_nat.send_wol(self.config['mac'])
+        host_nat.send_wol(self.config['host_mac'])
         self.next_check = time.time() + 60 #WOL 指令已经发送， 停止一分钟
         self.countdown()
 
